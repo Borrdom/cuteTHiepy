@@ -1,0 +1,28 @@
+
+[project]
+name = "cuteTHiepy"
+version = "0.0.1"
+authors = [
+    {name = "Dominik Borrmann", email = "dominik.borrmann@outlook.de"},
+    {name = "Marius Rother", email = "marius.rother@tu-dortmund.de"},
+]
+description = "A package for describing diffusion in and out of liquids and amorphous substances"
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+
+dependencies = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "xloil"]
+
+[build-system]
+requires = [
+  "setuptools >= 40.9.0",
+  "wheel",
+]
+[tool.setuptools.packages.find]
+include = ["cuteTHiepy"]
+
+
+
