@@ -1,7 +1,7 @@
 wget "https://www.python.org/ftp/python/3.9.13/python-3.9.13.exe" -O "C:\GitHub_Projects\cuteTHiepy\python-3.9.13.exe" 
 
 .\python-3.9.13.exe /quiet 
- wget "https://github.com/Borrdom/cuteTHiepy/raw/main/README.md" -O "C:\GitHub_Projects\cuteTHiepy\README.md"   
+wget "https://github.com/Borrdom/cuteTHiepy/raw/main/cuteTHiepy/plots.py" -O "plots.py"   
 @REM cd %USERPROFILE%
 @REM xcopy "W:\Aktuelle Listen\PC-SAFT_JourFix\cuteTHiepy\" %USERPROFILE%
 wget "https://www.python.org/ftp/python/3.9.13/python-3.9.13.exe" -O "C:\GitHub_Projects\cuteTHiepy\python-3.9.13.exe" 
