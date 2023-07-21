@@ -49,6 +49,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ymax_label=QtWidgets.QLabel("ymax")
         self.ylast_label=QtWidgets.QLabel("yend")
         self.nyticks_label=QtWidgets.QLabel("nyticks")
+
+        self.xy_pos=QtWidgets.QLabel("x= ; y=")
         
 
         # Connect button signals to respective slots
@@ -102,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # add rotation
         button_layout.addWidget(self.button_rotate_horizontal)
         button_layout.addWidget(self.button_rotate_vertical)
-
+        button_layout.addWidget(self.xy_pos)
         #Stretch until the end of the layout
         button_layout.addStretch(1)
 
@@ -121,6 +123,21 @@ class MainWindow(QtWidgets.QMainWindow):
         widget = QtWidgets.QWidget()
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
+
+
+        def update_mouse_coordinates(event):
+            if  event.xdata==None or event.ydata==None:
+                self.xy_pos.setText("x=; y=")
+                self.canvas.draw()
+                return
+            self.xy_pos.setText(f"x={event.xdata:.4f}; y={event.ydata:.4f}")
+            self.canvas.draw()
+        plt.connect('motion_notify_event', update_mouse_coordinates)
+
+
+
+
+
         self.show()
 
     def reset_ticks(self):
