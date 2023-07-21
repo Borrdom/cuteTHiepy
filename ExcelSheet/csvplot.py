@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_y_ticks.clicked.connect(self.adjust_y_ticks)
 
         # Create the toolbar and add it to the layout
-        toolbar = NavigationToolbar2QT(sc, self)
+        toolbar = NavigationToolbar2QT(sc, self,coordinates=True)
         toolbar.setOrientation(QtCore.Qt.Vertical)
         button_layout = QtWidgets.QVBoxLayout()
         
@@ -132,9 +132,9 @@ class origin_like:
         axs=fig.add_axes([0.2667,1-0.2042-0.5017,0.5908,0.5017])
         return fig,axs
     def set_xlabel(ax,xlabel1,xunit1=None):
-        ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$ / $\mathrm{{{xunit1}}}$') if xunit1 is not None else ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$ /-') 
+        ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$ / $\mathrm{{{xunit1}}}$') if xunit1 is not None else ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$') 
     def set_ylabel(ax,ylabel1,yunit1=None):
-        ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ \n / $\mathrm{{{yunit1}}}$',rotation=0,loc="top",linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'\n \n $\mathrm{{{ylabel1}}}$ \n / -',rotation=0,loc="top",linespacing=1.5)
+        ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ \n / $\mathrm{{{yunit1}}}$',rotation=0,loc="top",linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$',linespacing=1.5)
     def plot(ax,x,y,Formatstring,label=None,order=1):
         ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5)
     def set_ticks(ax,x0=None,x1=None,y0=None,y1=None):
@@ -147,38 +147,37 @@ class origin_like:
 
 
 
-df=pd.read_csv("Werte2.txt", encoding = "utf-8", sep=",", header=None)
 
-# Anzahl Subplots = Anzahl x-Achsen
-Boolarr=df.values[0,:]=="x"
-NSubs=Boolarr.sum()
+# df=pd.read_csv("Werte2.txt", encoding = "utf-8", sep=",", header=None)
+i=0
+dfs=[]
+while True:
+    i+=1
+    try:
+        dfs.append(pd.read_excel("Werte.xlsx", sheet_name=f"Series_plot {i}",header=None))
+    except:
+        break
 
-# Anzahl subplots erstellen
-#fig, ax = plt.subplots()
 
 fig, ax = origin_like.subplots()
 # Plotten
-k=-1
-
-for i in range(df.columns.size):
-    # x achse auslesen
-    if (df.values[0,i]=="x"):
-        k+=1
-        xlabel=df.values[1,i]
-        xunit=df.values[2,i]
-        x=df.values[5:,i]
-    else:    
-        ylabel=df.values[1,i]
-        yunit=df.values[2,i]
-        legend=df.values[3,i]
-        Formatstring=df.values[4,i]
-        y=df.values[5:,i]
-        # Plotten mit Formatierung
+xlabel=dfs[0].values[0,0]
+ylabel=dfs[0].values[0,1]
+print(xlabel)
+print(ylabel)
+for df in dfs:
+    x=df.values[3:,0]
+    for i in range(1,df.columns.size):
+        # x achse auslesen
+        legend=df.values[1,i]
+        Formatstring=df.values[2,i]
+        y=df.values[3:,i]
+            # Plotten mit Formatierung
         origin_like.plot(ax,x.astype(float),y.astype(float), Formatstring, label=legend)            
-        origin_like.set_xlabel(ax,xlabel,xunit)
-        origin_like.set_ylabel(ax,ylabel,yunit)
+        origin_like.set_xlabel(ax,xlabel)
+        origin_like.set_ylabel(ax,ylabel)
         origin_like.set_ticks(ax)
-# app = QApplication(sys.argv)
+    # app = QApplication(sys.argv)
 import sys
 app = QtWidgets.QApplication(sys.argv)
 canvas=FigureCanvasQTAgg(fig)
