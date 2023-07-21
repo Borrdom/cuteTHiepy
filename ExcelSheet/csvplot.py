@@ -6,12 +6,13 @@ matplotlib.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg,NavigationToolbar2QT
 import os
 from PyQt5 import QtCore, QtWidgets
-
+import sys
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self,fig,ax,canvas, *args, **kwargs):
+    def __init__(self,fig,ax,canvas,title, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+        self.setWindowTitle(title)
         sc=canvas
         self.fig=fig
         
@@ -37,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_y_ticks.clicked.connect(self.adjust_y_ticks)
 
         # Create the toolbar and add it to the layout
-        toolbar = NavigationToolbar2QT(sc, self,coordinates=True)
+        toolbar = NavigationToolbar2QT(sc, self,coordinates=False)
         toolbar.setOrientation(QtCore.Qt.Vertical)
         button_layout = QtWidgets.QVBoxLayout()
         
@@ -92,7 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def adjust_x_ticks(self):
         # Get the x ticks from the entry box
         x_ticks = self.entry_x_ticks.text()
-        start, end = ax.get_xlim()
+        start, end = self.ax.get_xlim()
         try:
             self.ax.xaxis.set_ticks(np.linspace(start, end, int(x_ticks)))
             self.canvas.draw()
@@ -102,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def adjust_y_ticks(self):
         # Get the y ticks from the entry box
         y_ticks = self.entry_y_ticks.text()
-        start, end = ax.get_ylim()
+        start, end = self.ax.get_ylim()
         try:
             self.ax.yaxis.set_ticks(np.linspace(start, end, int(y_ticks)))
             self.canvas.draw()
@@ -122,7 +123,7 @@ class origin_like:
         matplotlib.rcParams['ytick.major.pad']='5'
         matplotlib.rcParams['axes.linewidth'] = 0.5
         # matplotlib.rcParams["toolbar"] = "toolmanager"
-        plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+        # plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
         
         font = {'weight' : 'normal',
                 'size'   : 16,
@@ -130,15 +131,16 @@ class origin_like:
         plt.rc('font', **font)
         fig=plt.figure(figsize=(4 , 4), dpi = 250)
         axs=fig.add_axes([0.2667,1-0.2042-0.5017,0.5908,0.5017])
+        axs.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False, bottom=True, top=True, left=True, right=True, direction="in",length=4, width=0.5)
         return fig,axs
     def set_xlabel(ax,xlabel1,xunit1=None):
         ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$ / $\mathrm{{{xunit1}}}$') if xunit1 is not None else ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$') 
     def set_ylabel(ax,ylabel1,yunit1=None):
         ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ \n / $\mathrm{{{yunit1}}}$',rotation=0,loc="top",linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$',linespacing=1.5)
-    def plot(ax,x,y,Formatstring,label=None,order=1):
-        ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5)
+    def plot(ax,x,y,yerr,Formatstring,label=None,order=1):
+        if sum(yerr)==0 : yerr=None
+        ax.errorbar(x,y,yerr,None,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5,capsize=5, elinewidth=0.5,ecolor="k")
     def set_ticks(ax,x0=None,x1=None,y0=None,y1=None):
-        ax.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False, bottom=True, top=True, left=True, right=True, direction="in",length=4, width=0.5)
         if x0 is not None: ax.axis([x0, x1, y0, y1]) 
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.linspace(start, end, 5))
@@ -151,39 +153,45 @@ class origin_like:
 # df=pd.read_csv("Werte2.txt", encoding = "utf-8", sep=",", header=None)
 i=0
 dfs=[]
+titles=[]
 while True:
     i+=1
     try:
+        titles.append(f"Series_plot {i}")
         dfs.append(pd.read_excel("Werte.xlsx", sheet_name=f"Series_plot {i}",header=None))
     except:
         break
 
 
-fig, ax = origin_like.subplots()
+
 # Plotten
-xlabel=dfs[0].values[0,0]
-ylabel=dfs[0].values[0,1]
-print(xlabel)
-print(ylabel)
-for df in dfs:
-    x=df.values[3:,0]
-    for i in range(1,df.columns.size):
-        # x achse auslesen
-        legend=df.values[1,i]
-        Formatstring=df.values[2,i]
-        y=df.values[3:,i]
-            # Plotten mit Formatierung
-        origin_like.plot(ax,x.astype(float),y.astype(float), Formatstring, label=legend)            
-        origin_like.set_xlabel(ax,xlabel)
-        origin_like.set_ylabel(ax,ylabel)
-        origin_like.set_ticks(ax)
-    # app = QApplication(sys.argv)
-import sys
+
+
+
+
 app = QtWidgets.QApplication(sys.argv)
-canvas=FigureCanvasQTAgg(fig)
-canvas.setFixedSize(1000,1000)
-canvas.draw()
-matplotlib_gui = MainWindow(fig,ax,canvas)
-
-
+def Plot(df,title):
+    fig, ax = origin_like.subplots()
+    xlabel=df.values[0,0]
+    ylabel=df.values[0,1]
+    origin_like.set_xlabel(ax,xlabel)
+    origin_like.set_ylabel(ax,ylabel)
+    for i in range(df.columns.size):
+        if i%3==0:
+            x=df.values[4:,i]
+        if i%3==1:
+            legend=df.values[2,i]
+            Formatstring=df.values[3,i]
+            y=df.values[4:,i]
+        if i%3==2:
+            yerr=df.values[4:,i]
+            origin_like.plot(ax,x.astype(float),y.astype(float),yerr.astype(float), Formatstring, label=legend)            
+    canvas=FigureCanvasQTAgg(fig)
+    canvas.setFixedSize(1000,1000)
+    canvas.draw()
+    matplotlib_gui = MainWindow(fig,ax,canvas,title)
+    return matplotlib_gui
+matplotlib_guis=[]
+for title, df in zip(titles, dfs):
+    matplotlib_guis.append(Plot(df,title))
 app.exec_()
