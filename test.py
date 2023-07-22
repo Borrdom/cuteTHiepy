@@ -1,43 +1,31 @@
-import matplotlib
-import tkinter as tk
+import numpy as np
 import matplotlib.pyplot as plt
-matplotlib.use('TkAgg')
-# from matplotlib import style
-from matplotlib.backends._backend_tk import FigureCanvasTk, NavigationToolbar2Tk
-from matplotlib.figure import Figure
+
+x=np.linspace(0,1)
+y=x**2
+
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+fig.subplots_adjust(hspace=0.05)  # adjust space between axes
+
+# plot the same data on both axes
+ax1.plot(x,y)
+ax2.plot(x,y)
+
+# zoom-in / limit the view to different portions of the data
+ax1.set_ylim(.78, 1.)  # outliers only
+ax2.set_ylim(0, .22)  # most of the data
+
+ax1.spines.bottom.set_visible(False)
+ax2.spines.top.set_visible(False)
+ax1.xaxis.tick_top()
+ax1.tick_params(labeltop=False)  # don't put tick labels at the top
+ax2.xaxis.tick_bottom()
+
+d = .5  # proportion of vertical to horizontal extent of the slanted line
+kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
+              linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+ax1.plot([0, 1], [0, 0], transform=ax1.transAxes, **kwargs)
+ax2.plot([0, 1], [1, 1], transform=ax2.transAxes, **kwargs)
 
 
-class GraphPage(tk.Frame):
-
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
-        self.title_label = tk.Label(self, text="Graph Page Example")
-        self.title_label.pack()
-        self.pack()
-
-    def add_mpl_figure(self, fig):
-        self.mpl_canvas = FigureCanvasTk(fig, self)
-        plt.show()
-        self.mpl_canvas.show()
-        self.mpl_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-        self.toolbar = NavigationToolbar2Tk(self.mpl_canvas, self)
-        self.toolbar.update()
-        self.mpl_canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
-class MPLGraph(Figure):
-
-    def __init__(self):
-        Figure.__init__(self, figsize=(5, 5), dpi=100)
-        self.plot = self.add_subplot(111)
-        self.plot.plot([1, 2, 3, 4, 5, 6, 7], [4, 3, 5, 0, 2, 0, 6])
-
-
-fig = MPLGraph()
-
-root = tk.Tk()
-graph_page = GraphPage(root)
-graph_page.add_mpl_figure(fig)
-
-root.mainloop()
+plt.show()

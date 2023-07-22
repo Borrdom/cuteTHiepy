@@ -244,30 +244,50 @@ while True:
 
 app = QtWidgets.QApplication(sys.argv)
 
-def Plot(df,title):
-    k=0
-    fig, ax = origin_like.subplots()
+def extract_data(df,title):
+
     xlabel=df.values[0,0]
     ylabel=df.values[0,1]
-    origin_like.set_xlabel(ax,xlabel)
-    origin_like.set_ylabel(ax,ylabel)
+
+    xlst=[]
+    ylst=[]
+    yerrlst=[]
+    Formatstringlst=[]
+    legendlst=[]
     for i in range(df.columns.size):
         if i%3==0:
-            x=df.values[4:,i]
+            x=df.values[4:,i].astype(float)
+            xlst.append(x)
         if i%3==1:
             legend=df.values[2,i]
+            legendlst.append(legend)
             Formatstring=df.values[3,i]
-            y=df.values[4:,i]
+            Formatstringlst.append(Formatstring)
+            y=df.values[4:,i].astype(float)
+            ylst.append(y)
         if i%3==2:
-            k+=1
-            yerr=df.values[4:,i]
-            origin_like.plot(ax,x.astype(float),y.astype(float),yerr.astype(float), Formatstring, label=legend,order=k)            
+            yerr=df.values[4:,i].astype(float)
+            yerrlst.append(yerr)
+    
+    return xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel
+
+
+def plot_GUI(fig,ax):
     canvas=FigureCanvasQTAgg(fig)
     canvas.setFixedSize(1000,1000)
     canvas.draw()
     matplotlib_gui = MainWindow(fig,ax,canvas,title)
     return matplotlib_gui
+
+
 matplotlib_guis=[]
+
 for title, df in zip(titles, dfs):
-    matplotlib_guis.append(Plot(df,title))
+    xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel=extract_data(df,title)
+    fig, ax = origin_like.subplots()
+    origin_like.set_xlabel(ax,xlabel)
+    origin_like.set_ylabel(ax,ylabel)
+    for i,val in enumerate(xlst):
+        origin_like.plot(ax,xlst[i],ylst[i],yerrlst[i],Formatstringlst[i], label=legendlst[i],order=i)        
+    matplotlib_guis.append(plot_GUI(fig, ax))
 app.exec_()
