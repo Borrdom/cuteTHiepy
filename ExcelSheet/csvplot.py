@@ -206,20 +206,7 @@ class origin_like:
             ax=fig.add_axes([0.2667,1-0.2042-0.5017,0.5908,0.5017/2]) 
             ax2=fig.add_axes([0.2667,1-0.2042-0.5017,0.5908,0.5017/2])
             ax.get_shared_x_axes().join(ax, ax2) 
-            ax.set_ylim(.78, 1.)  # outliers only
-            ax2.set_ylim(0, .22)  # most of the data
 
-            ax.spines.bottom.set_visible(False)
-            ax2.spines.top.set_visible(False)
-            ax.xaxis.tick_top()
-            ax.tick_params(labeltop=False)  # don't put tick labels at the top
-            ax2.xaxis.tick_bottom()
-
-            d = .5  # proportion of vertical to horizontal extent of the slanted line
-            kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
-                        linestyle="none", color='k', mec='k', mew=1, clip_on=False)
-            ax.plot([0, 1], [0, 0], transform=ax.transAxes, **kwargs)
-            ax2.plot([0, 1], [1, 1], transform=ax2.transAxes, **kwargs)
         else:
             ax=fig.add_axes([0.2667,1-0.2042-0.5017,0.5908,0.5017])
         ax.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False, bottom=True, top=True, left=True, right=True, direction="in",length=4, width=0.5)
@@ -304,7 +291,7 @@ matplotlib_guis=[]
 
 for title, df in zip(titles, dfs):
     xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel=extract_data(df,title)
-    fig, ax = origin_like.subplots(True)
+    fig, ax = origin_like.subplots()
     origin_like.set_xlabel(ax,xlabel)
     origin_like.set_ylabel(ax,ylabel)
     for i,val in enumerate(xlst):
