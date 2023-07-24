@@ -234,15 +234,12 @@ class origin_like:
 i=0
 dfs=[]
 titles=[]
-while True:
-    i+=1
-    try:
-        titles.append(f"Series_plot {i}")
-        dfs.append(pd.read_excel("Werte.xlsx", sheet_name=f"Series_plot {i}",header=None))
-    except:
-        break
-
-
+excel_sheet=pd.read_excel("Werte.xlsx", sheet_name=None,header=None)
+for name, sheet in excel_sheet.items():
+    if "Series_plot" in name:
+        titles.append(name)
+        dfs.append(sheet)
+    
 
 # Plotten
 
@@ -297,4 +294,5 @@ for title, df in zip(titles, dfs):
     for i,val in enumerate(xlst):
         origin_like.plot(ax,xlst[i],ylst[i],yerrlst[i],Formatstringlst[i], label=legendlst[i],order=i)        
     matplotlib_guis.append(plot_GUI(fig, ax))
+plt.close('all')
 app.exec_()
