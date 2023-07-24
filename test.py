@@ -47,14 +47,15 @@ r0=data[:,0]
 fig = plt.figure(figsize=(6, 5),dpi=200)
 fig.subplots_adjust( wspace=0,hspace=0)
 ax = fig.add_axes(projection="ternary",rect=[0.18,1-0.1416-0.6603,0.6803,0.6803])
-ax.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False, bottom=True, top=False, left=True, right=True, direction="in",length=4, width=0.5,labelrotation='horizontal')
+ax.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False, bottom=True, top=False, left=True, right=True, direction="in",length=6, width=0.5,labelrotation='horizontal')
+ax.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False, bottom=True, top=False, left=True, right=True, direction="in",length=4, width=0.5,labelrotation='horizontal',which="minor")
 ax.tick_params(axis="t",pad=10)
 ax.tick_params(axis="l",pad=10)
 ax.tick_params(axis="r",pad=10)
 ax.taxis.set_label_rotation_mode( 'horizontal')
 ax.laxis.set_label_rotation_mode( 'horizontal')
 ax.raxis.set_label_rotation_mode( 'horizontal')
-ax.text(s="mass fractions \ -",x=450, y=80)
+ax.text(s="mass fractions \ -",x=470, y=80)
 ax.text(s="T = 298.15 K \np = 1 bar",x=50, y=700)
 
 pc = ax.plot(t0, l0, r0,"-k",linewidth=1)
@@ -63,6 +64,7 @@ ax.set_llabel('polymer')
 ax.set_rlabel('API')
 
 
-
-
+from matplotlib.ticker import MultipleLocator, AutoMinorLocator
+ax.laxis.set_minor_locator(MultipleLocator(0.1))
+ax.raxis.set_minor_locator(AutoMinorLocator(5))
 plt.show()
