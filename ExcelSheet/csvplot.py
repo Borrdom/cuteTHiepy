@@ -426,7 +426,7 @@ def extract_ternary_data(df,title):
 
 def plot_GUI(fig,ax):
     canvas=FigureCanvasQTAgg(fig)
-    canvas.setFixedSize(1000,1000)
+    canvas.setFixedSize(*fig.get_size_inches()*fig.get_dpi())
     canvas.draw()
     matplotlib_gui = MainWindow(fig,ax,canvas,title)
     return matplotlib_gui
