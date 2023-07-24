@@ -10,7 +10,7 @@ import sys
 from matplotlib.ticker import AutoLocator
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
+from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 import sys
 import mpltern
 
@@ -221,7 +221,9 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             if hasattr(self.ax,"taxis"):
                 self.ax.set_tlim(float(x_min), float(x_max))
-                self.ax.taxis.set_ticks(np.linspace(float(x_min), float(x_last), int(x_ticks)))
+                ticks=np.linspace(float(x_min), float(x_last), int(x_ticks))
+                ticks_zero_one_less=ticks[np.logical_and(ticks!=0,ticks!=1)]
+                self.ax.taxis.set_ticks(ticks_zero_one_less)
             else:
                 self.ax.set_xlim(float(x_min), float(x_max))
                 self.ax.xaxis.set_ticks(np.linspace(float(x_min), float(x_last), int(x_ticks)))
@@ -238,7 +240,9 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             if hasattr(self.ax,"taxis"):
                 self.ax.set_llim(float(y_min), float(y_max))
-                self.ax.laxis.set_ticks(np.linspace(float(y_min), float(y_last), int(y_ticks)))
+                ticks=np.linspace(float(y_min), float(y_last), int(y_ticks))
+                ticks_zero_one_less=ticks[np.logical_and(ticks!=0,ticks!=1)]
+                self.ax.laxis.set_ticks(ticks_zero_one_less)
             else:
                 self.ax.set_ylim(float(y_min), float(y_max))
                 self.ax.yaxis.set_ticks(np.linspace(float(y_min), float(y_last) , int(y_ticks)))
@@ -246,6 +250,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.draw()
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid y limits.")
+        
+
     def adjust_z_limits(self):
         # Get the y limits from the entry box
         z_min, z_max = self.entry_z_min.text(),self.entry_z_max.text()
@@ -253,10 +259,12 @@ class MainWindow(QtWidgets.QMainWindow):
         z_ticks = self.entry_z_ticks.text()
         try:
             self.ax.set_rlim(float(z_min), float(z_max))
-            self.ax.raxis.set_ticks(np.linspace(float(z_min), float(z_last), int(z_ticks)))
+            ticks=np.linspace(float(z_min), float(z_last), int(z_ticks))
+            ticks_zero_one_less=ticks[np.logical_and(ticks!=0,ticks!=1)]
+            self.ax.raxis.set_ticks(ticks_zero_one_less)
             self.canvas.draw()
         except ValueError:
-            QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid y limits.")
+            QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid z limits.")
 
 
 
@@ -346,9 +354,9 @@ class origin_like:
         ax.set_tlabel(xlabel)
         ax.set_llabel(ylabel)
         ax.set_rlabel(zlabel)
-        # ax.taxis.set_minor_locator(MultipleLocator(0.1))
-        # ax.laxis.set_minor_locator(MultipleLocator(0.1))
-        # ax.raxis.set_minor_locator(MultipleLocator(0.1))
+        ax.taxis.set_minor_locator(AutoMinorLocator(2))
+        ax.laxis.set_minor_locator(AutoMinorLocator(2))
+        ax.raxis.set_minor_locator(AutoMinorLocator(2))
 
 
 # df=pd.read_csv("Werte2.txt", encoding = "utf-8", sep=",", header=None)

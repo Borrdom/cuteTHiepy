@@ -11,10 +11,11 @@ readme = "README.md"
 license = {text = "BSD-3-Clause"}
 
 dependencies = [
+    "openpyxl",
     "pandas",
     "numpy",
     "matplotlib",
-    "xloil"]
+    "mpltern"]
 
 [build-system]
 requires = [
