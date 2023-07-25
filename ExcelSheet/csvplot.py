@@ -360,13 +360,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # def 
     #     self.ax.fill(t0, l0, r0, alpha=0.2,color="#FF8500")
-
+def basic_colors(Formatstring):
+    if "g" in Formatstring: return "#99CC00" #green
+    if "c" in Formatstring: return "#99CDE9" #cyan
+    if "b" in Formatstring: return "#99CDE9" #blue
+    if "r" in Formatstring: return "#FF8500" #orange
+    if "m" in Formatstring: return "#FFCCCC" #magenta
+    if "y" in Formatstring: return "#FFD67E" #yellow
+    if "a" in Formatstring: return "#666666" #gray
+    if "k" in Formatstring: return "#000000" #black
+    return "#000000"
 
 class origin_like:
-    def basic_colors(shorthand="g"):
-        if shorthand=="g": return "99CC00"
-        if shorthand=="o": return "FF8500"
-        if shorthand=="gray": return "666666"
     def subplots(sharex=False):
         matplotlib.rcParams['mathtext.fontset'] = 'custom'
         matplotlib.rcParams['mathtext.rm'] = 'Calibri'
@@ -399,9 +404,9 @@ class origin_like:
         ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ \n / $\mathrm{{{yunit1}}}$',rotation=0,loc="top",linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$',linespacing=1.5)
     def plot(ax,x,y,Formatstring,label=None,order=1,yerr=None,z=None):
         if z is not None:
-            ax.plot(x,y,z,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5) 
+            ax.plot(x,y,z,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5,color=basic_colors(Formatstring)) 
         else:
-            ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5)
+            ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5,color=basic_colors(Formatstring))
             if yerr is not None:
                 if sum(yerr)==0 : yerr=None
                 ax.errorbar(x,y,yerr,None,"ko" , zorder=order-1,label=label,markersize=0, markeredgecolor='k',markeredgewidth=0.5,capsize=5, elinewidth=0.5,ecolor="k")
@@ -453,16 +458,16 @@ class origin_like:
         ax.raxis.set_minor_locator(AutoMinorLocator(2))
 
     def filled_line(ax,x,y,z,Formatstring,legend):
-        p=ax.plot(x, y, z,Formatstring,linewidth=1,label=legend+"_filled")
+        p=ax.plot(x, y, z,Formatstring,linewidth=1,label=legend+"_filled",color=basic_colors(Formatstring))
         color = p[0].get_color()
         ax.fill(x, y, z, alpha=0.2,color=color,label=legend+"_filled")
 
     def conodes(ax,RBx,RBy,RBz,LBx,LBy,LBz,Formatstring,legend):
-        ax.plot(RBx,RBy,RBz,Formatstring,linewidth=1,label=legend)
-        ax.plot(LBx,LBy,LBz,Formatstring,linewidth=1,label=legend)
+        ax.plot(RBx,RBy,RBz,Formatstring,linewidth=1,label=legend,color=basic_colors(Formatstring))
+        ax.plot(LBx,LBy,LBz,Formatstring,linewidth=1,label=legend,color=basic_colors(Formatstring))
         
         for i,(rt,rl,rr,lt,ll,lr) in enumerate(zip(RBx,RBy,RBz,LBx,LBy,LBz)):
-                ax.plot([rt,lt],[rl,ll],[rr,lr],Formatstring,linewidth=0.5,label=f"Konode {i}")
+                ax.plot([rt,lt],[rl,ll],[rr,lr],"-",linewidth=0.5,label=f"Konode {i}",color=basic_colors(Formatstring))
 
 
 
