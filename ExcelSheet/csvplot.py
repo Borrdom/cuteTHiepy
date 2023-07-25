@@ -27,6 +27,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ax=ax
         self.canvas=canvas
 
+        self.texts=[val for val in self.ax.get_children() if isinstance(val,matplotlib.text.Text) ]
+
+
         # Create buttons
         self.button_x_limits = QtWidgets.QPushButton("Adjust X Limits")
         self.button_y_limits = QtWidgets.QPushButton("Adjust Y Limits")
@@ -61,12 +64,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ymax_label=QtWidgets.QLabel("ymax")
         self.ylast_label=QtWidgets.QLabel("yend")
         self.nyticks_label=QtWidgets.QLabel("nyticks")
+        if hasattr(self.ax,"taxis"):
+            self.zmin_label=QtWidgets.QLabel("zmin")
+            self.zmax_label=QtWidgets.QLabel("zmax")
+            self.zlast_label=QtWidgets.QLabel("zend")
+            self.nzticks_label=QtWidgets.QLabel("nzticks")
+            
+            self.label_label=QtWidgets.QLabel("label")
+            self.entry_label = QtWidgets.QLineEdit("mass fractions /-")
 
-        self.zmin_label=QtWidgets.QLabel("zmin")
-        self.zmax_label=QtWidgets.QLabel("zmax")
-        self.zlast_label=QtWidgets.QLabel("zend")
-        self.nzticks_label=QtWidgets.QLabel("nzticks")
+            self.tlabel_label=QtWidgets.QLabel("x label")
+            self.tlabel_entry = QtWidgets.QLineEdit(self.ax.get_tlabel())
+            self.llabel_label=QtWidgets.QLabel("y label")
+            self.llabel_entry = QtWidgets.QLineEdit(self.ax.get_llabel())
+            self.rlabel_label=QtWidgets.QLabel("z label")
+            self.rlabel_entry = QtWidgets.QLineEdit(self.ax.get_rlabel())
 
+            self.ax.set_tlabel("")
+            self.ax.set_llabel("")
+            self.ax.set_rlabel("")
+            self.canvas.draw()
+            self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
+            self.canvas.blit(self.fig.bbox)
+            self.button_redraw = QtWidgets.QPushButton("Reset label positions")
+            self.button_redraw.clicked.connect(lambda: self.canvas.draw())
+
+            self.title_label=QtWidgets.QLabel("title")
+            self.entry_title = QtWidgets.QPlainTextEdit("T = 298.15 K \np = 1 bar")
+ 
         self.xy_pos=QtWidgets.QLabel("x= ; y=")
         
 
@@ -117,31 +142,45 @@ class MainWindow(QtWidgets.QMainWindow):
         #adjust ylim button
         button_layout.addWidget(self.button_y_limits)
 
-
+        if hasattr(self.ax,"taxis"):
         #adjust zlim labels 
-        zlim_label_layout = QtWidgets.QHBoxLayout()
-        zlim_label_layout.addWidget(self.zmin_label)
-        zlim_label_layout.addWidget(self.zmax_label)
-        zlim_label_layout.addWidget(self.zlast_label)
-        zlim_label_layout.addWidget(self.nzticks_label)
+            zlim_label_layout = QtWidgets.QHBoxLayout()
+            zlim_label_layout.addWidget(self.zmin_label)
+            zlim_label_layout.addWidget(self.zmax_label)
+            zlim_label_layout.addWidget(self.zlast_label)
+            zlim_label_layout.addWidget(self.nzticks_label)
         
-        if hasattr(self.ax,"taxis"): button_layout.addLayout(zlim_label_layout)
-        #adjust ylim entries
-        zlim_layout = QtWidgets.QHBoxLayout()
-        zlim_layout.addWidget(self.entry_z_min)
-        zlim_layout.addWidget(self.entry_z_max)
-        zlim_layout.addWidget(self.entry_z_last)
-        zlim_layout.addWidget(self.entry_z_ticks)
-        if hasattr(self.ax,"taxis"): button_layout.addLayout(zlim_layout)
-        #adjust ylim button
-        if hasattr(self.ax,"taxis"): button_layout.addWidget(self.button_z_limits)
-        #add a reset button
+            button_layout.addLayout(zlim_label_layout)
+            #adjust ylim entries
+            zlim_layout = QtWidgets.QHBoxLayout()
+            zlim_layout.addWidget(self.entry_z_min)
+            zlim_layout.addWidget(self.entry_z_max)
+            zlim_layout.addWidget(self.entry_z_last)
+            zlim_layout.addWidget(self.entry_z_ticks)
+            button_layout.addLayout(zlim_layout)
+            button_layout.addWidget(self.button_z_limits)
+            button_layout.addWidget(self.label_label)
+            button_layout.addWidget(self.entry_label)
+            button_layout.addWidget(self.title_label)
+            button_layout.addWidget(self.entry_title)
+
+            button_layout.addWidget(self.tlabel_label)
+            button_layout.addWidget(self.tlabel_entry)
+            button_layout.addWidget(self.llabel_label)
+            button_layout.addWidget(self.llabel_entry)
+            button_layout.addWidget(self.rlabel_label)
+            button_layout.addWidget(self.rlabel_entry)
+
         button_layout.addWidget(self.button_reset_ticks)
 
         # add rotation
-        button_layout.addWidget(self.button_rotate_horizontal)
-        button_layout.addWidget(self.button_rotate_vertical)
-        button_layout.addWidget(self.xy_pos)
+        if hasattr(self.ax,"taxis"):
+            button_layout.addWidget(self.button_redraw)
+        else:
+
+            button_layout.addWidget(self.button_rotate_horizontal)
+            button_layout.addWidget(self.button_rotate_vertical)
+            button_layout.addWidget(self.xy_pos)
         #Stretch until the end of the layout
         button_layout.addStretch(1)
 
@@ -156,7 +195,14 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout = QtWidgets.QHBoxLayout()
         main_layout.addLayout(button_layout)
         main_layout.addLayout(plot_layout)
-        
+
+        if hasattr(self.ax,"taxis"):
+            self.entry_label.textChanged.connect(self.refresh_label_title)
+            self.entry_title.textChanged.connect(self.refresh_label_title)
+            self.tlabel_entry.textChanged.connect(self.refresh_label_title)
+            self.llabel_entry.textChanged.connect(self.refresh_label_title)
+            self.rlabel_entry.textChanged.connect(self.refresh_label_title)
+            self.refresh_label_title()
         # self.scene = QGraphicsScene(self)
         # self.view = QGraphicsView(self.scene)
         # main_layout.addWidget(self.view)
@@ -192,7 +238,9 @@ class MainWindow(QtWidgets.QMainWindow):
         else: 
             self.ax.xaxis.set_major_locator(AutoLocator())
             self.ax.yaxis.set_major_locator(AutoLocator())
+        
         self.canvas.draw()
+        # self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
         
 
 
@@ -203,23 +251,27 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ax.yaxis.label.set(rotation=90)
             self.ax.yaxis.set_label_coords(-0.15,0.5)
         self.canvas.draw()
+        # self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
     def horizontal_ylabel(self):
         if hasattr(self.ax,"taxis"):
             pass
         else: 
             self.ax.yaxis.label.set(rotation=0)
             self.ax.yaxis.set_label_coords(-0.1,1)
-            self.canvas.draw()
+        self.canvas.draw()
 
     def adjust_x_limits(self):
         # Get the x limits from the entry box
         x_min, x_max = self.entry_x_min.text(),self.entry_x_max.text()
         x_last= self.entry_x_last.text()
         x_ticks = self.entry_x_ticks.text()
-
+        
         
         try:
             if hasattr(self.ax,"taxis"):
+                self.ax.set_tlabel("")
+                self.ax.set_llabel("")
+                self.ax.set_rlabel("")
                 self.ax.set_tlim(float(x_min), float(x_max))
                 ticks=np.linspace(float(x_min), float(x_last), int(x_ticks))
                 ticks_zero_one_less=ticks[np.logical_and(ticks!=0,ticks!=1)]
@@ -229,6 +281,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ax.xaxis.set_ticks(np.linspace(float(x_min), float(x_last), int(x_ticks)))
             # self.ax.xaxis.set_major_locator(AutoLocator())
             self.canvas.draw()
+            
+            self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
+            self.refresh_label_title()
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid x limits.")
 
@@ -239,6 +294,9 @@ class MainWindow(QtWidgets.QMainWindow):
         y_ticks = self.entry_y_ticks.text()
         try:
             if hasattr(self.ax,"taxis"):
+                self.ax.set_tlabel("")
+                self.ax.set_llabel("")
+                self.ax.set_rlabel("")
                 self.ax.set_llim(float(y_min), float(y_max))
                 ticks=np.linspace(float(y_min), float(y_last), int(y_ticks))
                 ticks_zero_one_less=ticks[np.logical_and(ticks!=0,ticks!=1)]
@@ -248,6 +306,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ax.yaxis.set_ticks(np.linspace(float(y_min), float(y_last) , int(y_ticks)))
             # self.ax.yaxis.set_major_locator(AutoLocator())
             self.canvas.draw()
+            self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
+            self.refresh_label_title()
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid y limits.")
         
@@ -258,13 +318,45 @@ class MainWindow(QtWidgets.QMainWindow):
         z_last= self.entry_z_last.text()
         z_ticks = self.entry_z_ticks.text()
         try:
+
+            self.ax.set_tlabel("")
+            self.ax.set_llabel("")
+            self.ax.set_rlabel("")
             self.ax.set_rlim(float(z_min), float(z_max))
             ticks=np.linspace(float(z_min), float(z_last), int(z_ticks))
             ticks_zero_one_less=ticks[np.logical_and(ticks!=0,ticks!=1)]
             self.ax.raxis.set_ticks(ticks_zero_one_less)
             self.canvas.draw()
+            self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
+            self.refresh_label_title()
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid z limits.")
+
+    
+    def refresh_label_title(self):
+        self.texts[0].set_text(self.entry_label.text())
+        self.texts[1].set_text(self.entry_title.toPlainText())
+
+        tlabel=self.ax.set_tlabel(self.tlabel_entry.text())
+        llabel=self.ax.set_llabel(self.llabel_entry.text())
+        rlabel=self.ax.set_rlabel(self.rlabel_entry.text())
+        # tlabel=self.ax.set_tlabel(self.tlabel_entry.text())
+        # llabel=self.ax.set_llabel(self.llabel_entry.text()+"         ")
+        # rlabel=self.ax.set_rlabel("         "+self.rlabel_entry.text())
+
+        self.canvas.restore_region(self.bg)
+        ax.draw_artist(self.texts[0])
+        ax.draw_artist(self.texts[1])
+        ax.draw_artist(tlabel)
+        ax.draw_artist(llabel)
+        ax.draw_artist(rlabel)
+        
+        self.canvas.blit(self.fig.bbox)
+        ax.figure.canvas.flush_events()
+        # fig.canvas.draw_idle()
+        # QtWidgets.QApplication.processEvents()
+
+
 
     # def 
     #     self.ax.fill(t0, l0, r0, alpha=0.2,color="#FF8500")
@@ -359,6 +451,18 @@ class origin_like:
         ax.laxis.set_minor_locator(AutoMinorLocator(2))
         ax.raxis.set_minor_locator(AutoMinorLocator(2))
 
+    def filled_line(ax,x,y,z,Formatstring):
+        p=ax.plot(x, y, z,Formatstring,linewidth=1)
+        color = p[0].get_color()
+        ax.fill(x, y, z, alpha=0.2,color=color)
+
+    def conodes(ax,RBx,RBy,RBz,LBx,LBy,LBz,Formatstring):
+        ax.plot(RBx,RBy,RBz,Formatstring,linewidth=1)
+        ax.plot(LBx,LBy,LBz,Formatstring,linewidth=1)
+        for rt,rl,rr,lt,ll,lr in zip(RBx,RBy,RBz,LBx,LBy,LBz):
+                ax.plot([rt,lt],[rl,ll],[rr,lr],Formatstring,linewidth=0.5)
+
+
 
 # df=pd.read_csv("Werte2.txt", encoding = "utf-8", sep=",", header=None)
 i=0
@@ -382,6 +486,7 @@ def extract_data(df,title):
 
     xlabel=df.values[0,0]
     ylabel=df.values[0,1]
+    zlabel=df.values[0,2]
 
     xlst=[]
     ylst=[]
@@ -403,35 +508,35 @@ def extract_data(df,title):
             yerr=df.values[4:,i].astype(float)
             yerrlst.append(yerr)
     
-    return xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel
+    return xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel
 
-def extract_ternary_data(df,title):
+# def extract_ternary_data(df,title):
 
-    xlabel=df.values[0,0]
-    ylabel=df.values[0,1]
-    zlabel=df.values[0,2]
+#     xlabel=df.values[0,0]
+#     ylabel=df.values[0,1]
+#     zlabel=df.values[0,2]
 
-    xlst=[]
-    ylst=[]
-    zlst=[]
-    Formatstringlst=[]
-    legendlst=[]
-    for i in range(df.columns.size):
-        if i%3==0:
-            x=df.values[4:,i].astype(float)
-            xlst.append(x)
-        if i%3==1:
-            legend=df.values[2,i]
-            legendlst.append(legend)
-            Formatstring=df.values[3,i]
-            Formatstringlst.append(Formatstring)
-            y=df.values[4:,i].astype(float)
-            ylst.append(y)
-        if i%3==2:
-            z=df.values[4:,i].astype(float)
-            zlst.append(z)
+#     xlst=[]
+#     ylst=[]
+#     zlst=[]
+#     Formatstringlst=[]
+#     legendlst=[]
+#     for i in range(df.columns.size):
+#         if i%3==0:
+#             x=df.values[4:,i].astype(float)
+#             xlst.append(x)
+#         if i%3==1:
+#             legend=df.values[2,i]
+#             legendlst.append(legend)
+#             Formatstring=df.values[3,i]
+#             Formatstringlst.append(Formatstring)
+#             y=df.values[4:,i].astype(float)
+#             ylst.append(y)
+#         if i%3==2:
+#             z=df.values[4:,i].astype(float)
+#             zlst.append(z)
     
-    return xlst,ylst,zlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel
+#     return xlst,ylst,zlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel
 
 def plot_GUI(fig,ax):
     canvas=FigureCanvasQTAgg(fig)
@@ -445,23 +550,35 @@ def plot_GUI(fig,ax):
  
 matplotlib_guis=[]
 
-if "ternary" in sys.argv:
-    for title, df in zip(titles, dfs):
-        xlst,ylst,zlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel=extract_ternary_data(df,title)
-        fig, ax = origin_like.ternary()
-        origin_like.set_labels(ax,label="mass fractions / -",title="T = 298.15 K \np = 1 bar",xlabel=xlabel,ylabel=ylabel,zlabel=zlabel)
-    for i,val in enumerate(xlst):
-        origin_like.plot(ax,xlst[i],ylst[i],np.zeros_like(ylst[i]),Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)        
-    matplotlib_guis.append(plot_GUI(fig, ax))
+# if "ternary" in sys.argv:
+#     for title, df in zip(titles, dfs):
+#         # xlst,ylst,zlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel=extract_ternary_data(df,title)
+#         fig, ax = origin_like.ternary()
+#         origin_like.set_labels(ax,label="mass fractions / -",title="T = 298.15 K \np = 1 bar",xlabel=xlabel,ylabel=ylabel,zlabel=zlabel)
+#     for i,val in enumerate(xlst):
+#         origin_like.plot(ax,xlst[i],ylst[i],np.zeros_like(ylst[i]),Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
+#         origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i])     
+#     origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i])           
+#     matplotlib_guis.append(plot_GUI(fig, ax))
 
-else:
-    for title, df in zip(titles, dfs):
-        xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel=extract_data(df,title)
+# else:
+for title, df in zip(titles, dfs):
+    xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel=extract_data(df,title)
+    if "ternary" in sys.argv:
+        fig, ax = origin_like.ternary()
+        origin_like.set_labels(ax,label="",title="",xlabel=xlabel,ylabel=ylabel,zlabel=zlabel)
+        zlst=[]
+        for i,val in enumerate(xlst):
+            zlst.append(1-xlst[i]-ylst[i])
+            origin_like.plot(ax,xlst[i],ylst[i],np.zeros_like(ylst[i]),Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
+            origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i])     
+        origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i])            
+    else:
         fig, ax = origin_like.subplots()
         origin_like.set_xlabel(ax,xlabel)
         origin_like.set_ylabel(ax,ylabel)
         for i,val in enumerate(xlst):
             origin_like.plot(ax,xlst[i],ylst[i],yerrlst[i],Formatstringlst[i], label=legendlst[i],order=i)        
-        matplotlib_guis.append(plot_GUI(fig, ax))
+    matplotlib_guis.append(plot_GUI(fig, ax))
 plt.close('all')
 app.exec_()
