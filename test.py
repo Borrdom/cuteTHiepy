@@ -60,7 +60,7 @@ ax.raxis.set_label_rotation_mode( 'horizontal')
 ax.text(s="mass fractions / -",x=470, y=80)
 ax.text(s="T = 298.15 K \np = 1 bar",x=50, y=700)
 
-pc = ax.plot(t0, l0, r0,color="#FF8500",linewidth=1)
+# pc = ax.plot(t0, l0, r0,color="#FF8500",linewidth=1)
 ax.set_tlabel('solvent')
 ax.set_llabel('polymer')
 ax.set_rlabel('API')
@@ -71,12 +71,13 @@ ax.taxis.set_minor_locator(AutoMinorLocator(2))
 ax.laxis.set_minor_locator(AutoMinorLocator(2))
 ax.raxis.set_minor_locator(AutoMinorLocator(2))
 # ax.tricontourf(t0, l0, r0, np.ones_like(r0))
-ax.fill(t0, l0, r0, alpha=0.2,color="#FF8500")
+# ax.fill(t0, l0, r0, alpha=0.2,color="#FF8500")
 # ax.raxis.set_minor_locator(AutoMinorLocator(5))
 
 
 
-LB=np.asarray([[0.27531, 0.13522, 0.58947],
+LB=np.asarray([[0.19153, 0.17689, 0.63158],
+       [0.27531, 0.13522, 0.58947],
        [0.33872, 0.11391, 0.54737],
        [0.39555, 0.09919, 0.50526],
        [0.44881, 0.08803, 0.46316],
@@ -95,7 +96,8 @@ LBl=LB[:,2]
 LBr=LB[:,0]
 
 
-RB=np.asarray([[1.03200e-01, 2.53210e-01, 6.43580e-01],
+RB=np.asarray([[0.14961    , 0.20589, 0.64449],
+       [1.03200e-01, 2.53210e-01, 6.43580e-01],
        [7.16700e-02, 3.00820e-01, 6.27510e-01],
        [5.08900e-02, 3.46180e-01, 6.02930e-01],
        [3.62700e-02, 3.91370e-01, 5.72360e-01],
@@ -113,13 +115,27 @@ RBt=RB[:,1]
 RBl=RB[:,2]
 RBr=RB[:,0]
 
-B1 = ax.plot(LBt,LBl,LBr,"-k",linewidth=1)
+# B1 = ax.plot(LBt,LBl,LBr,"-k",linewidth=1)
 
-B2 = ax.plot(RBt,RBl,RBr,"-k",linewidth=1)
-
-
-for rt,rl,rr,lt,ll,lr in zip(RBt,RBl,RBr,LBt,LBl,LBr):
-        B2 = ax.plot([rt,lt],[rl,ll],[rr,lr],"-k",linewidth=0.5)
+# B2 = ax.plot(RBt,RBl,RBr,"-k",linewidth=1)
 
 
+
+
+def filled_line(ax,x,y,z,Formatstring):
+       p=ax.plot(x, y, z,Formatstring,linewidth=1)
+       color = p[0].get_color()
+       ax.fill(x, y, z, alpha=0.2,color=color)
+
+def conodes(ax,RBx,RBy,RBz,LBx,LBy,LBz,Formatstring):
+       ax.plot(RBx,RBy,RBz,Formatstring,linewidth=1)
+       ax.plot(LBx,LBy,LBz,Formatstring,linewidth=1)
+       for rt,rl,rr,lt,ll,lr in zip(RBx,RBy,RBz,LBx,LBy,LBz):
+              ax.plot([rt,lt],[rl,ll],[rr,lr],Formatstring,linewidth=0.5)
+
+
+Formatstring1="-r"
+Formatstring2="-k"
+filled_line(ax,t0,l0,r0,Formatstring1)
+conodes(ax,RBt,RBl,RBr,LBt,LBl,LBr,Formatstring2)
 plt.show()

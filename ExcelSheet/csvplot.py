@@ -451,16 +451,17 @@ class origin_like:
         ax.laxis.set_minor_locator(AutoMinorLocator(2))
         ax.raxis.set_minor_locator(AutoMinorLocator(2))
 
-    def filled_line(ax,x,y,z,Formatstring):
-        p=ax.plot(x, y, z,Formatstring,linewidth=1)
+    def filled_line(ax,x,y,z,Formatstring,legend):
+        p=ax.plot(x, y, z,Formatstring,linewidth=1,label=legend+"_filled")
         color = p[0].get_color()
-        ax.fill(x, y, z, alpha=0.2,color=color)
+        ax.fill(x, y, z, alpha=0.2,color=color,label=legend+"_filled")
 
-    def conodes(ax,RBx,RBy,RBz,LBx,LBy,LBz,Formatstring):
-        ax.plot(RBx,RBy,RBz,Formatstring,linewidth=1)
-        ax.plot(LBx,LBy,LBz,Formatstring,linewidth=1)
-        for rt,rl,rr,lt,ll,lr in zip(RBx,RBy,RBz,LBx,LBy,LBz):
-                ax.plot([rt,lt],[rl,ll],[rr,lr],Formatstring,linewidth=0.5)
+    def conodes(ax,RBx,RBy,RBz,LBx,LBy,LBz,Formatstring,legend):
+        ax.plot(RBx,RBy,RBz,Formatstring,linewidth=1,label=legend)
+        ax.plot(LBx,LBy,LBz,Formatstring,linewidth=1,label=legend)
+        
+        for i,(rt,rl,rr,lt,ll,lr) in enumerate(zip(RBx,RBy,RBz,LBx,LBy,LBz)):
+                ax.plot([rt,lt],[rl,ll],[rr,lr],Formatstring,linewidth=0.5,label=f"Konode {i}")
 
 
 
@@ -570,9 +571,9 @@ for title, df in zip(titles, dfs):
         zlst=[]
         for i,val in enumerate(xlst):
             zlst.append(1-xlst[i]-ylst[i])
-            origin_like.plot(ax,xlst[i],ylst[i],np.zeros_like(ylst[i]),Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
-            origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i])     
-        origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i])            
+            # origin_like.plot(ax,xlst[i],ylst[i],np.zeros_like(ylst[i]),Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
+            origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i],legendlst[i])     
+        origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i],legendlst[i])            
     else:
         fig, ax = origin_like.subplots()
         origin_like.set_xlabel(ax,xlabel)
