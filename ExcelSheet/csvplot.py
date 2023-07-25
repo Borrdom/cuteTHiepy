@@ -266,7 +266,8 @@ class MainWindow(QtWidgets.QMainWindow):
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid z limits.")
 
-
+    # def 
+    #     self.ax.fill(t0, l0, r0, alpha=0.2,color="#FF8500")
 
 
 class origin_like:
