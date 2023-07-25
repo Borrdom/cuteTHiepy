@@ -397,13 +397,14 @@ class origin_like:
         ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$ / $\mathrm{{{xunit1}}}$') if xunit1 is not None else ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$') 
     def set_ylabel(ax,ylabel1,yunit1=None):
         ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ \n / $\mathrm{{{yunit1}}}$',rotation=0,loc="top",linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$',linespacing=1.5)
-    def plot(ax,x,y,yerr,Formatstring,label=None,order=1,z=None):
-        if sum(yerr)==0 : yerr=None
+    def plot(ax,x,y,Formatstring,label=None,order=1,yerr=None,z=None):
         if z is not None:
             ax.plot(x,y,z,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5) 
         else:
             ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5)
-            ax.errorbar(x,y,yerr,None,"ko" , zorder=order-1,label=label,markersize=0, markeredgecolor='k',markeredgewidth=0.5,capsize=5, elinewidth=0.5,ecolor="k")
+            if yerr is not None:
+                if sum(yerr)==0 : yerr=None
+                ax.errorbar(x,y,yerr,None,"ko" , zorder=order-1,label=label,markersize=0, markeredgecolor='k',markeredgewidth=0.5,capsize=5, elinewidth=0.5,ecolor="k")
         
         # ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5)
     def set_ticks(ax,x0=None,x1=None,y0=None,y1=None):
@@ -571,7 +572,7 @@ for title, df in zip(titles, dfs):
         zlst=[]
         for i,val in enumerate(xlst):
             zlst.append(1-xlst[i]-ylst[i])
-            # origin_like.plot(ax,xlst[i],ylst[i],np.zeros_like(ylst[i]),Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
+            origin_like.plot(ax,xlst[i],ylst[i],Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
             origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i],legendlst[i])     
         origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i],legendlst[i])            
     else:
@@ -579,7 +580,7 @@ for title, df in zip(titles, dfs):
         origin_like.set_xlabel(ax,xlabel)
         origin_like.set_ylabel(ax,ylabel)
         for i,val in enumerate(xlst):
-            origin_like.plot(ax,xlst[i],ylst[i],yerrlst[i],Formatstringlst[i], label=legendlst[i],order=i)        
+            origin_like.plot(ax,xlst[i],ylst[i],Formatstringlst[i], yerr=yerrlst[i],label=legendlst[i],order=i)        
     matplotlib_guis.append(plot_GUI(fig, ax))
 plt.close('all')
 app.exec_()
