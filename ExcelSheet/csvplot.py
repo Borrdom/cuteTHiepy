@@ -443,15 +443,11 @@ class PlotWidget(QWidget):
             painter.setPen(Qt.blue)
             painter.drawText(point, f"x{i}")
             painter.drawEllipse(point, 2, 2)
-            if i==1 : self.xaxis1=point
-            if i==2 : self.xaxis2=point
         for point in self.yaxis_points:
             j+=1
             painter.setPen(Qt.red)
             painter.drawText(point, f"y{j}")
             painter.drawEllipse(point, 2, 2)
-            if j==1 : self.yaxis1=point
-            if j==2 : self.yaxis2=point
         for point in self.points:
             painter.setPen(Qt.green)
             painter.setBrush(Qt.green)
@@ -475,7 +471,8 @@ class PlotWidget(QWidget):
 class DigitizePlotGUI(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.data = pd.DataFrame() 
+        self.data = {}
+        self.k=0
         self.setWindowTitle("Plot Digitizer")
         self.plot_widget = None
         self.image = None
@@ -529,9 +526,9 @@ class DigitizePlotGUI(QMainWindow):
         self.layout.addWidget(self.plot_widget)
 
     def keyPressEvent(self, event):
-
+        
         if event.key()==Qt.Key_Return:
-
+            self.k+=1
             x1,y1=float(self.x1_entry.text()),float(self.y1_entry.text())
             x2,y2=float(self.x2_entry.text()),float(self.y2_entry.text())
             P1x=self.plot_widget.xaxis_points[0].x()
@@ -544,18 +541,16 @@ class DigitizePlotGUI(QMainWindow):
                 Qx,Qy=point.x(),point.y()
                 xQ.append((x2-x1)/(P2x-P1x)*(Qx-P1x)+x1)
                 yQ.append((y2-y1)/(P4y-P3y)*(Qy-P3y)+y1)
-            xQ=np.asarray(xQ)
-            yQ=np.asarray(yQ)
-            newdata=pd.DataFrame((xQ,yQ)).T
-            self.data=self.data.append(newdata)
-            newdata.to_clipboard(excel=True, sep=None, index=False, header=None)
+            newdata={f"x{self.k}":xQ , f"y{self.k}":yQ}
+            self.data.update(newdata)
+            pd.DataFrame.from_dict(self.data,orient='index').T.to_clipboard(excel=True, sep=None, index=False)
             self.plot_widget.points=[]
             self.plot_widget.update()
             
 
         if event.key()==Qt.Key_Alt:
-            self.data.to_excel("file.xlsx")
-            self.data.to_clipboard(excel=True, sep=None, index=False, header=None)
+            pd.DataFrame.from_dict(self.data,orient='index').T.to_excel("file.xlsx")
+            pd.DataFrame.from_dict(self.data,orient='index').T.to_clipboard(excel=True, sep=None, index=False)
             self.close()
 
         if event.key()==Qt.Key_Escape:
