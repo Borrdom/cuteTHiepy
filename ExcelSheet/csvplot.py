@@ -383,6 +383,7 @@ class digitizer(QtWidgets.QMainWindow):
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.setWindowTitle("Press enter key to snip")
+        self.setGeometry(0, 0,300, 1)
         self.show()
     def start(self):
         screen = QtWidgets.QApplication.primaryScreen()
@@ -489,9 +490,10 @@ class DigitizePlotGUI(QMainWindow):
         self.setGeometry(0, 0,size.width()*0.9, size.height()*0.9)
         self.setCentralWidget(QWidget())
         self.layout = QVBoxLayout(self.centralWidget())
+
         self.hlayout = QGridLayout(self.centralWidget())
         self.load_plot_image("capture.png")
-
+        # self.layout.addStretch(1)
 
         self.x1_entry = QtWidgets.QLineEdit()
         self.y1_entry = QtWidgets.QLineEdit()
@@ -516,6 +518,7 @@ class DigitizePlotGUI(QMainWindow):
 
 
 
+
         self.hlayout.addWidget(self.P1_label,1,0)
         self.hlayout.addWidget(self.x1_entry,1,1)
         self.hlayout.addWidget(self.P3_label,1,2)
@@ -524,8 +527,13 @@ class DigitizePlotGUI(QMainWindow):
         self.hlayout.addWidget(self.y1_entry,2,1)
         self.hlayout.addWidget(self.P4_label,2,2)
         self.hlayout.addWidget(self.y2_entry,2,3)
+        self.hlayout.addWidget(QtWidgets.QLabel("Click on 2 axis points for x values (blue) and y values (red). Then click on data points (green)"),1,4)
+        self.hlayout.addWidget(QtWidgets.QLabel("Press enter to copy data points to clipboard. Press escape to remove all points. Press alt to copy all data points and close"),2,4)
+
 
         self.layout.addLayout(self.hlayout)
+        
+
 
         self.show()
     def load_plot_image(self, image_path):
