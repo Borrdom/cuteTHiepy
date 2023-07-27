@@ -5,7 +5,12 @@ import matplotlib
 matplotlib.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg,NavigationToolbar2QT
 import os
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets,QtGui
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget,QGridLayout
+from PyQt5.QtGui import QImage, QPainter,QFont
+from PyQt5.QtCore import Qt
+import sys
+import matplotlib.pyplot as plt
 import sys
 from matplotlib.ticker import AutoLocator
 import numpy as np
@@ -13,13 +18,14 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 import sys
 import mpltern
+from PIL import ImageGrab
 
 
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self,fig,ax,canvas,title, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        
+
         self.setWindowTitle(title)
         sc=canvas
         self.fig=fig
@@ -230,6 +236,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
+
+
+
+
     def reset_ticks(self):
         if hasattr(self.ax,"taxis"):
             self.ax.taxis.set_major_locator(AutoLocator())
@@ -357,13 +367,213 @@ class MainWindow(QtWidgets.QMainWindow):
         # QtWidgets.QApplication.processEvents()
 
 
+class digitizer(QtWidgets.QMainWindow):
 
-    # def 
-    #     self.ax.fill(t0, l0, r0, alpha=0.2,color="#FF8500")
+    def __init__(self, *args, **kwargs):
+        super(digitizer, self).__init__(None, QtCore.Qt.WindowStaysOnTopHint,*args, **kwargs)
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint )
+        self.begin = QtCore.QPoint()
+        self.end = QtCore.QPoint()
+        self.setWindowTitle("Press enter key to snip")
+        self.show()
+    def start(self):
+        screen = QtWidgets.QApplication.primaryScreen()
+        size = screen.size()
+        # screen_width = root.winfo_screenwidth()
+        # screen_height = root.winfo_screenheight()
+        self.setGeometry(0, 0,size.width(), size.height())
+        self.setWindowTitle(' ')
+
+        
+    
+        self.setWindowOpacity(0.3)
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        print('Capture the screen...')
+        self.show()
+
+    def paintEvent(self, event):
+        qp = QtGui.QPainter(self)
+        qp.setPen(QtGui.QPen(QtGui.QColor('black'), 3))
+        qp.setBrush(QtGui.QColor(128, 128, 255, 128))
+        qp.drawRect(QtCore.QRect(self.begin, self.end))
+
+    def mousePressEvent(self, event):
+        self.begin = event.pos()
+        self.end = self.begin
+        self.update()
+
+    def mouseMoveEvent(self, event):
+        self.end = event.pos()
+        self.update()
+
+    def mouseReleaseEvent(self, event):
+        self.close()
+
+        x1 = min(self.begin.x(), self.end.x())
+        y1 = min(self.begin.y(), self.end.y())
+        x2 = max(self.begin.x(), self.end.x())
+        y2 = max(self.begin.y(), self.end.y())
+
+        img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+        img.save('capture.png')
+    def keyPressEvent(self, event):
+        if event.key()==Qt.Key_Return:
+            self.start()
+            print("Hey")
+
+
+
+
+class PlotWidget(QWidget):
+    def __init__(self, image):
+        super().__init__()
+        self.image = image
+        self.xaxis_points = []
+        self.yaxis_points = []
+        self.points=[]
+        
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawImage(0, 0, self.image)
+        painter.setFont(QtGui.QFont("arial",22))
+        i,j=0,0
+        for point in self.xaxis_points:
+            i+=1
+            painter.setPen(Qt.blue)
+            painter.drawText(point, f"x{i}")
+            painter.drawEllipse(point, 2, 2)
+            if i==1 : self.xaxis1=point
+            if i==2 : self.xaxis2=point
+        for point in self.yaxis_points:
+            j+=1
+            painter.setPen(Qt.red)
+            painter.drawText(point, f"y{j}")
+            painter.drawEllipse(point, 2, 2)
+            if j==1 : self.yaxis1=point
+            if j==2 : self.yaxis2=point
+        for point in self.points:
+            painter.setPen(Qt.green)
+            painter.setBrush(Qt.green)
+            painter.drawEllipse(point, 3, 3)
+        
+    def mousePressEvent(self, event):
+        if event.buttons() & Qt.LeftButton:
+            clicked_point = event.pos()
+
+            # Check if the user is selecting an axis point
+            if len(self.xaxis_points) < 2:
+                self.xaxis_points.append(clicked_point)
+                self.update()
+            elif len(self.yaxis_points) < 2:
+                self.yaxis_points.append(clicked_point)
+                self.update()
+            else:
+                self.points.append(clicked_point)
+                self.update()
+
+class DigitizePlotGUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.data = pd.DataFrame() 
+        self.setWindowTitle("Plot Digitizer")
+        self.plot_widget = None
+        self.image = None
+        screen = QtWidgets.QApplication.primaryScreen()
+        size = screen.size()
+        self.setGeometry(0, 0,size.width()*0.9, size.height()*0.9)
+        self.setCentralWidget(QWidget())
+        self.layout = QVBoxLayout(self.centralWidget())
+        self.hlayout = QGridLayout(self.centralWidget())
+        self.load_plot_image("capture.png")
+
+
+        self.x1_entry = QtWidgets.QLineEdit()
+        self.y1_entry = QtWidgets.QLineEdit()
+        self.P1_label=QtWidgets.QLabel("x1")
+        self.P1_label.setStyleSheet("color: blue")
+        self.P1_label.setFont(QFont('Arial', 22))
+
+        self.P2_label=QtWidgets.QLabel("y1")
+        self.P2_label.setStyleSheet("color: red")
+        self.P2_label.setFont(QFont('Arial', 22))
+
+
+        self.x2_entry = QtWidgets.QLineEdit()
+        self.y2_entry = QtWidgets.QLineEdit()
+        self.P3_label=QtWidgets.QLabel("x2")
+        self.P3_label.setStyleSheet("color: blue")
+        self.P3_label.setFont(QFont('Arial', 22))
+
+        self.P4_label=QtWidgets.QLabel("y2")
+        self.P4_label.setStyleSheet("color: red")
+        self.P4_label.setFont(QFont('Arial', 22))
+
+
+
+        self.hlayout.addWidget(self.P1_label,1,0)
+        self.hlayout.addWidget(self.x1_entry,1,1)
+        self.hlayout.addWidget(self.P3_label,1,2)
+        self.hlayout.addWidget(self.x2_entry,1,3)
+        self.hlayout.addWidget(self.P2_label,2,0)
+        self.hlayout.addWidget(self.y1_entry,2,1)
+        self.hlayout.addWidget(self.P4_label,2,2)
+        self.hlayout.addWidget(self.y2_entry,2,3)
+
+        self.layout.addLayout(self.hlayout)
+
+        self.show()
+    def load_plot_image(self, image_path):
+        self.image = QImage(image_path)
+        self.plot_widget = PlotWidget(self.image)
+        self.layout.addWidget(self.plot_widget)
+
+    def keyPressEvent(self, event):
+
+        if event.key()==Qt.Key_Return:
+
+            x1,y1=float(self.x1_entry.text()),float(self.y1_entry.text())
+            x2,y2=float(self.x2_entry.text()),float(self.y2_entry.text())
+            P1x=self.plot_widget.xaxis_points[0].x()
+            P2x=self.plot_widget.xaxis_points[1].x()
+            P3y=self.plot_widget.yaxis_points[0].y()
+            P4y=self.plot_widget.yaxis_points[1].y()
+            xQ=[]
+            yQ=[]
+            for point in self.plot_widget.points:
+                Qx,Qy=point.x(),point.y()
+                xQ.append((x2-x1)/(P2x-P1x)*(Qx-P1x)+x1)
+                yQ.append((y2-y1)/(P4y-P3y)*(Qy-P3y)+y1)
+            xQ=np.asarray(xQ)
+            yQ=np.asarray(yQ)
+            newdata=pd.DataFrame((xQ,yQ)).T
+            self.data=self.data.append(newdata)
+            newdata.to_clipboard(excel=True, sep=None, index=False, header=None)
+            self.plot_widget.points=[]
+            self.plot_widget.update()
+            
+
+        if event.key()==Qt.Key_Alt:
+            self.data.to_excel("file.xlsx")
+            self.data.to_clipboard(excel=True, sep=None, index=False, header=None)
+            self.close()
+
+        if event.key()==Qt.Key_Escape:
+            self.plot_widget.xaxis_points=[]
+            self.plot_widget.yaxis_points=[]
+            self.plot_widget.points=[]
+            self.data = pd.DataFrame()
+            self.plot_widget.update()
+
+
+            # self.points=[]
+            # self.update()
+            
+
 def basic_colors(Formatstring):
     if "g" in Formatstring: return "#99CC00" #green
     if "c" in Formatstring: return "#99CDE9" #cyan
-    if "b" in Formatstring: return "#99CDE9" #blue
+    if "b" in Formatstring: return "#246FE2" #blue
     if "r" in Formatstring: return "#FF8500" #orange
     if "m" in Formatstring: return "#FFCCCC" #magenta
     if "y" in Formatstring: return "#FFD67E" #yellow
@@ -487,7 +697,7 @@ for name, sheet in excel_sheet.items():
 
 
 
-app = QtWidgets.QApplication(sys.argv)
+# app = QtWidgets.QApplication(sys.argv)
 
 def extract_data(df,title):
 
@@ -569,23 +779,31 @@ matplotlib_guis=[]
 #     matplotlib_guis.append(plot_GUI(fig, ax))
 
 # else:
-for title, df in zip(titles, dfs):
-    xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel=extract_data(df,title)
-    if "ternary" in sys.argv:
-        fig, ax = origin_like.ternary()
-        origin_like.set_labels(ax,label="",title="",xlabel=xlabel,ylabel=ylabel,zlabel=zlabel)
-        zlst=[]
-        for i,val in enumerate(xlst):
-            zlst.append(1-xlst[i]-ylst[i])
-            origin_like.plot(ax,xlst[i],ylst[i],Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
-            origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i],legendlst[i])     
-        origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i],legendlst[i])            
-    else:
-        fig, ax = origin_like.subplots()
-        origin_like.set_xlabel(ax,xlabel)
-        origin_like.set_ylabel(ax,ylabel)
-        for i,val in enumerate(xlst):
-            origin_like.plot(ax,xlst[i],ylst[i],Formatstringlst[i], yerr=yerrlst[i],label=legendlst[i],order=i)        
-    matplotlib_guis.append(plot_GUI(fig, ax))
+if "digitizer" in sys.argv:
+    app = QApplication(sys.argv)
+    GUI=digitizer()
+    app.exec_()
+    window = DigitizePlotGUI()
+
+else:
+    for title, df in zip(titles, dfs):
+        xlst,ylst,yerrlst,Formatstringlst,legendlst,xlabel,ylabel,zlabel=extract_data(df,title)
+        if "ternary" in sys.argv:
+            fig, ax = origin_like.ternary()
+            origin_like.set_labels(ax,label="",title="",xlabel=xlabel,ylabel=ylabel,zlabel=zlabel)
+            zlst=[]
+            for i,val in enumerate(xlst):
+                zlst.append(1-xlst[i]-ylst[i])
+                origin_like.plot(ax,xlst[i],ylst[i],Formatstringlst[i], z=zlst[i],label=legendlst[i],order=i)
+                origin_like.filled_line(ax,xlst[i],ylst[i],zlst[i],Formatstringlst[i],legendlst[i])     
+            origin_like.conodes(ax,xlst[0],ylst[0],zlst[0],xlst[1],ylst[1],zlst[1],Formatstringlst[i],legendlst[i])
+
+        else:
+            fig, ax = origin_like.subplots()
+            origin_like.set_xlabel(ax,xlabel)
+            origin_like.set_ylabel(ax,ylabel)
+            for i,val in enumerate(xlst):
+                origin_like.plot(ax,xlst[i],ylst[i],Formatstringlst[i], yerr=yerrlst[i],label=legendlst[i],order=i)        
+        matplotlib_guis.append(plot_GUI(fig, ax))
 plt.close('all')
 app.exec_()
