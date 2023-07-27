@@ -293,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.draw()
             
             self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
-            self.refresh_label_title()
+            if hasattr(self.ax,"taxis"): self.refresh_label_title()
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid x limits.")
 
@@ -317,7 +317,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # self.ax.yaxis.set_major_locator(AutoLocator())
             self.canvas.draw()
             self.bg = self.canvas.copy_from_bbox(self.fig.bbox)
-            self.refresh_label_title()
+            if hasattr(self.ax,"taxis"): self.refresh_label_title()
         except ValueError:
             QtWidgets.QMessageBox.warning(self, "Invalid Input", "Please enter valid y limits.")
         
@@ -557,7 +557,7 @@ class DigitizePlotGUI(QMainWindow):
             self.plot_widget.xaxis_points=[]
             self.plot_widget.yaxis_points=[]
             self.plot_widget.points=[]
-            self.data = pd.DataFrame()
+            self.data = {}
             self.plot_widget.update()
 
 
@@ -774,8 +774,8 @@ matplotlib_guis=[]
 #     matplotlib_guis.append(plot_GUI(fig, ax))
 
 # else:
+app = QApplication(sys.argv)
 if "digitizer" in sys.argv:
-    app = QApplication(sys.argv)
     GUI=digitizer()
     app.exec_()
     window = DigitizePlotGUI()
