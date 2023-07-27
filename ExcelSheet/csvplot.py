@@ -19,7 +19,7 @@ from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 import sys
 import mpltern
 from PIL import ImageGrab
-
+import io
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -43,6 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_reset_ticks = QtWidgets.QPushButton("Reset Ticks")
         self.button_rotate_vertical = QtWidgets.QPushButton("Rotate y-Axis vertical")
         self.button_rotate_horizontal = QtWidgets.QPushButton("Rotate y-Axis horizontal")
+        self.button_clipboard = QtWidgets.QPushButton("Copy plot to clipboard")
 
         # Create entry boxes
         self.entry_x_min = QtWidgets.QLineEdit()
@@ -102,6 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
 
         # Connect button signals to respective slots
+        self.button_clipboard.clicked.connect(self.copy_to_clipboard)
         self.button_x_limits.clicked.connect(self.adjust_x_limits)
         self.button_y_limits.clicked.connect(self.adjust_y_limits)
         self.button_z_limits.clicked.connect(self.adjust_z_limits)
@@ -188,6 +190,7 @@ class MainWindow(QtWidgets.QMainWindow):
             button_layout.addWidget(self.button_rotate_vertical)
             button_layout.addWidget(self.xy_pos)
         #Stretch until the end of the layout
+        button_layout.addWidget(self.button_clipboard)
         button_layout.addStretch(1)
 
         # Create the toolbar and add it to the layout
@@ -230,11 +233,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.canvas.draw()
             plt.connect('motion_notify_event', update_mouse_coordinates)
 
-
-
-
-
         self.show()
+
+
+    def copy_to_clipboard(self):    
+        width, height = self.fig.get_size_inches() * self.fig.get_dpi()
+        image = self.canvas.buffer_rgba()
+
+        qimage = QImage(image, width, height,  QImage.Format_ARGB32).rgbSwapped()
+        pixmap = QtGui.QPixmap.fromImage(qimage)
+        QApplication.clipboard().setPixmap(pixmap)
 
 
 
