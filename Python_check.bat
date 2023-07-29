@@ -1,7 +1,14 @@
 @echo off
 
-rem Check if Python is already installed
+rem Check if Python is already installed on the Machine
 reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Python\PythonCore" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo Python is already installed.
+    exit /b
+)
+
+rem Check if Python is already installed on the User profile
+reg query "HKEY_CURRENT_USER\Software\Python\PythonCore" >nul 2>&1
 if %errorlevel% equ 0 (
     echo Python is already installed.
     exit /b
