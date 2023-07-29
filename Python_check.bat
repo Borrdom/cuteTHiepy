@@ -16,13 +16,19 @@ if %errorlevel% equ 0 (
 
 rem Download Python installer (change the URL if needed)
 echo Downloading Python installer...
-curl -o python-installer.exe https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe
+mkdir "$($env:USERPROFILE)\AppData\Local\cuteTHiepy"
+cd "$($env:USERPROFILE)\AppData\Local\cuteTHiepy"
+wget "https://www.python.org/ftp/python/3.9.13/python-3.9.13-amd64.exe" -O "$($env:USERPROFILE)\AppData\Local\cuteTHiepy\python-3.9.13-amd64.exe"
+
+
 
 rem Install Python silently
 echo Installing Python...
-start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
+rem TargetDir="$($env:USERPROFILE)\AppData\Local\cuteTHiepy"
+start /wait python-3.9.13-amd64.exe /quiet PrependPath=1
 
 rem Wait for the installation to complete (10 seconds in this example)
 timeout /t 10 >nul
 
 echo Python installation completed.
+
