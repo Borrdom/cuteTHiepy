@@ -601,6 +601,7 @@ class origin_like:
         matplotlib.rcParams['xtick.major.pad']='5'
         matplotlib.rcParams['ytick.major.pad']='5'
         matplotlib.rcParams['axes.linewidth'] = 0.5
+        matplotlib.rcParams['axes.axisbelow'] = True
         # matplotlib.rcParams["toolbar"] = "toolmanager"
         # plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
         

@@ -36,6 +36,7 @@ class origin_like:
         matplotlib.rcParams['mathtext.bf'] = 'Calibri'
         matplotlib.rcParams['xtick.major.pad']='10'
         matplotlib.rcParams['ytick.major.pad']='10'
+        matplotlib.rcParams['axes.axisbelow'] = True
         font = {'weight' : 'normal',
                 'size'   : 28,
                 'family' : "calibri"}
