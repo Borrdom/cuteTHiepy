@@ -240,7 +240,7 @@ class MainWindow(QtWidgets.QMainWindow):
         width, height = self.fig.get_size_inches() * self.fig.get_dpi()
         image = self.canvas.buffer_rgba()
 
-        qimage = QImage(image, width, height,  QImage.Format_ARGB32).rgbSwapped()
+        qimage = QImage(image, width.astype(int), height.astype(int),  QImage.Format_ARGB32).rgbSwapped()
         pixmap = QtGui.QPixmap.fromImage(qimage)
         QApplication.clipboard().setPixmap(pixmap)
 
@@ -487,7 +487,7 @@ class DigitizePlotGUI(QMainWindow):
         self.image = None
         screen = QtWidgets.QApplication.primaryScreen()
         size = screen.size()
-        self.setGeometry(0, 0,size.width()*0.9, size.height()*0.9)
+        self.setGeometry(0, 0,int(size.width()*0.9), int(size.height()*0.9))
         self.setCentralWidget(QWidget())
         self.layout = QVBoxLayout(self.centralWidget())
 
@@ -769,7 +769,10 @@ def extract_data(df,title):
 
 def plot_GUI(fig,ax):
     canvas=FigureCanvasQTAgg(fig)
-    canvas.setFixedSize(*fig.get_size_inches()*fig.get_dpi())
+    dpi=fig.get_dpi()
+    inches=fig.get_size_inches()
+    size=dpi*inches
+    canvas.setFixedSize(*size.astype(int))
     canvas.draw()
     matplotlib_gui = MainWindow(fig,ax,canvas,title)
     return matplotlib_gui
