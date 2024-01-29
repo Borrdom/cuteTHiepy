@@ -1,11 +1,20 @@
-import pandas as pd
+
 from PyQt5 import QtCore, QtWidgets,QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget,QGridLayout
 from PyQt5.QtGui import QImage, QPainter,QFont
 from PyQt5.QtCore import Qt
 import sys
-import sys
 from PIL import ImageGrab
+import pyperclip
+
+# arr_str = '\n'.join(['\t'.join(map(str, row)) for row in arr])
+
+# # Add headers to the top of the array string
+# arr_str = '\t'.join(headers) + '\n' + arr_str
+
+# # Copy the string to the clipboard
+# pyperclip.copy(arr_str)
+
 
 class digitizer(QtWidgets.QMainWindow):
 
@@ -191,14 +200,26 @@ class DigitizePlotGUI(QMainWindow):
                 yQ.append((y2-y1)/(P4y-P3y)*(Qy-P3y)+y1)
             newdata={f"x{self.k}":xQ , f"y{self.k}":yQ}
             self.data.update(newdata)
-            pd.DataFrame.from_dict(self.data,orient='index').T.to_clipboard(excel=True, sep=None, index=False)
+            arr=self.data.values()
+            arr=zip(*arr)
+            headers=self.data.keys()
+            arr_str = '\n'.join(['\t'.join(map(str, row)) for row in arr])
+
+            # Add headers to the top of the array string
+            arr_str = '\t'.join(headers) + '\n' + arr_str
+
+            # Copy the string to the clipboard
+            pyperclip.copy(arr_str)
+
+
+            #pd.DataFrame.from_dict(self.data,orient='index').T.to_clipboard(excel=True, sep=None, index=False)
             self.plot_widget.points=[]
             self.plot_widget.update()
             
 
         if event.key()==Qt.Key_Alt:
-            pd.DataFrame.from_dict(self.data,orient='index').T.to_excel("file.xlsx")
-            pd.DataFrame.from_dict(self.data,orient='index').T.to_clipboard(excel=True, sep=None, index=False)
+            # pd.DataFrame.from_dict(self.data,orient='index').T.to_excel("file.xlsx")
+            # pd.DataFrame.from_dict(self.data,orient='index').T.to_clipboard(excel=True, sep=None, index=False)
             self.close()
 
         if event.key()==Qt.Key_Escape:
