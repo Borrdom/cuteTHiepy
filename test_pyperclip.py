@@ -1,7 +1,7 @@
 import pyperclip
 
 # Create a list of lists
-lst = [[1, 2], [3, 4], [5, 6]]
+lst = [[1, 2], [3, 4], [5]]
 
 # Define headers for the columns
 headers = ['Header1', 'Header2']

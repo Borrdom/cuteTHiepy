@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 import sys
 from PIL import ImageGrab
 import pyperclip
-
+from itertools import zip_longest
 # arr_str = '\n'.join(['\t'.join(map(str, row)) for row in arr])
 
 # # Add headers to the top of the array string
@@ -200,11 +200,12 @@ class DigitizePlotGUI(QMainWindow):
                 yQ.append((y2-y1)/(P4y-P3y)*(Qy-P3y)+y1)
             newdata={f"x{self.k}":xQ , f"y{self.k}":yQ}
             self.data.update(newdata)
-            arr=self.data.values()
-            arr=zip(*arr)
+            arr=list(self.data.values())
+            
+            arr=map(list, zip_longest(*arr))
             headers=self.data.keys()
             arr_str = '\n'.join(['\t'.join(map(str, row)) for row in arr])
-
+            arr_str=arr_str.replace('None','')
             # Add headers to the top of the array string
             arr_str = '\t'.join(headers) + '\n' + arr_str
 
